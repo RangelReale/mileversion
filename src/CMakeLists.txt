@@ -1,3 +1,8 @@
+IF("${CMAKE_SYSTEM}" MATCHES "Linux")
+FIND_PACKAGE(LibElf REQUIRED)
+INCLUDE_DIRECTORIES(${LIBELF_INCLUDE_DIRS})
+ENDIF()
+
 SET(SRCS
 	mileversion.cpp
 )
@@ -26,4 +31,6 @@ ADD_LIBRARY(mileversionstatic STATIC ${SRCS} ${INCS} )
 if (WIN32)
 TARGET_LINK_LIBRARIES ( mileversion version )
 endif()
-
+IF("${CMAKE_SYSTEM}" MATCHES "Linux")
+TARGET_LINK_LIBRARIES ( mileversion ${LIBELF_LIBRARIES} )
+ENDIF()

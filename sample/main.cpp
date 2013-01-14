@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+static char *mileversion_app = "3.0.4.0";
+
 int main(int argc, char* argv[])
 {
 	mileversion::mileversion version(argv[0], "mileversion_app");
