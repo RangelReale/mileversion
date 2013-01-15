@@ -8,7 +8,7 @@ namespace mileversion {
 class mileversionimpl
 {
 public:
-	mileversionimpl(const std::string &filename, const std::string &versionid);
+	mileversionimpl(const std::string &filename);
 	virtual ~mileversionimpl();
 
 	bool haveInfo();

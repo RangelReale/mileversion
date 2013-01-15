@@ -4,8 +4,8 @@
 
 namespace mileversion {
 
-mileversion::mileversion(const std::string &filename, const std::string &versionid) : 
-	_pImpl(new mileversionimpl(filename, versionid))
+mileversion::mileversion(const std::string &filename) : 
+	_pImpl(new mileversionimpl(filename))
 {
 
 }

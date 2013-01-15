@@ -5,7 +5,7 @@
 
 namespace mileversion {
 
-mileversionimpl::mileversionimpl(const std::string &filename, const std::string &versionid) : 
+mileversionimpl::mileversionimpl(const std::string &filename) : 
 	_filename(filename), _haveinfo(false)
 {
 	VS_FIXEDFILEINFO *fileinfo;

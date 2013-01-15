@@ -1,3 +1,4 @@
+#include "mileversion/mileversion.h"
 #include "mileversion/mileversionimpl_LINUX.h"
 #include "mileversion/exceptions.h"
 
@@ -9,7 +10,7 @@
 
 namespace mileversion {
 
-mileversionimpl::mileversionimpl(const std::string &filename, const std::string &versionid) : 
+mileversionimpl::mileversionimpl(const std::string &filename) : 
 	_filename(filename), _haveinfo(false)
 {
 	/* Check libelf version first */
@@ -20,30 +21,32 @@ mileversionimpl::mileversionimpl(const std::string &filename, const std::string 
 		return;
 
 	Elf *elf = elf_begin(fd, ELF_C_READ, NULL);
+	if (!elf)
+	{
+		close(fd);
+		return;
+	}
+	
 	size_t shstrndx;
 	if (elf_getshdrstrndx (elf, &shstrndx ) != 0)
 	{
+		close(fd);
 		elf_end(elf);
 		return;
 	}
 	
-	Elf_Scn *scn = NULL, *datascn = NULL;
+	Elf_Scn *scn = NULL;
 	GElf_Shdr shdr;
 	Elf_Data *edata = NULL;
-	GElf_Sym sym, versionsym;
+	GElf_Sym sym;
 	int symbol_count;
 	int i;
-	bool isversionsym = false;
 	
 	// find .data section and "versionid" symbol
 	while((scn = elf_nextscn(elf, scn)) != 0)
 	{
 		gelf_getshdr(scn, &shdr);
 		char *name = elf_strptr(elf, shstrndx, shdr.sh_name);
-		printf("%s\n", name);
-		
-		if (strcmp(name, ".data") == 0)
-			datascn = scn;
 		
 		if(shdr.sh_type == SHT_SYMTAB)
 		{
@@ -58,56 +61,31 @@ mileversionimpl::mileversionimpl(const std::string &filename, const std::string 
 			{
 				gelf_getsym(edata, i, &sym);
 				char *symbolname = elf_strptr(elf, shdr.sh_link, sym.st_name);
-				if (strstr(symbolname, versionid.c_str()) != NULL)
+				char *versionstart;
+				if ((versionstart = strstr(symbolname, MILEVERSION_VERSION_STR)) != NULL)
 				{
-					printf("%s\n", symbolname);
+					versionstart += strlen(MILEVERSION_VERSION_STR);
 					
-					isversionsym = true;
-					versionsym = sym;
+					int mh, ml, nh, nl;
+					if (sscanf(versionstart, "%d_%d_%d_%d", &mh, &ml, &nh, &nl) == 4)
+					{
+						_haveinfo = true;
+						
+						char vinfo[50];
+						sprintf(vinfo, "%d.%d.%d.%d", mh, ml, nh, nl);
+						
+						_fileversion = vinfo;
+						break;
+					}
 				}
 			}
 		}
+		
+		if (_haveinfo)
+			break;
 	}
 	
-	if (!datascn || !isversionsym)
-	{
-		elf_end(elf);
-		return;
-	}
-	
-	if (gelf_getshdr(datascn, &shdr) == NULL)
-	{
-		elf_end(elf);
-		return;
-	}
-
-	/*
-	int n = 0;
-	Elf_Data *data = NULL;
-	while ( n < shdr.sh_size && ( data = elf_getdata (datascn, data )) != NULL ) {
-		char *p = ( char *) data->d_buf ;
-		while ( p < ( char *) data->d_buf + data->d_size ) {
-			//if ( vis ( pc , *p , VIS_WHITE , 0))
-				//printf ( "%c" , p );
-				putchar(*p);
-			n++; p++;
-			//( void ) putchar(( n % 16) ?'':'\n' );
-			//if (!(n % 16)) putchar('\n');
-		}
-	}
-	( void ) putchar ( '\n' );
-	*;
-	
-	
-	/*
-	edata = NULL;
-	if ((edata = elf_getdata(datascn, edata)) != NULL)
-	{
-		printf("%p\n", edata);
-	}
-	*/
-	
-	
+	close(fd);
 	elf_end(elf);
 }
 

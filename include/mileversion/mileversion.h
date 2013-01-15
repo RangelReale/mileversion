@@ -3,6 +3,11 @@
 
 #include <string>
 
+#define MILEVERSION_VERSION_STR		"mileversion_versioninfo_"
+
+#define MILEVERSION_DECLARE_VERSION(MH, ML, NH, NL) \
+	char mileversion_versioninfo_##MH##_##ML##_##NH##_##NL[] = "mv";
+
 namespace mileversion {
 
 class mileversionimpl;
@@ -10,7 +15,7 @@ class mileversionimpl;
 class mileversion
 {
 public:
-	mileversion(const std::string &filename, const std::string &versionid);
+	mileversion(const std::string &filename);
 	virtual ~mileversion();
 
 	bool haveInfo();
