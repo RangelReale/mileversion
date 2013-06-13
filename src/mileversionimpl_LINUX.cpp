@@ -4,6 +4,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <unistd.h>
 #include <fcntl.h>
 #include <libelf.h>
 #include <gelf.h>
